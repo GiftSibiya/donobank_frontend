@@ -5,6 +5,7 @@ import ProtectedRoute from "./components/auth/ProtectedRoutes";
 import HomePage from "./pages/home/HomePage";
 import LoginPage from "./pages/home/LoginPage";
 import UserHome from "./pages/user/UserHome";
+import DonationsPage from "./pages/donations/DonationsPage";
 
 function App() {
   return (
@@ -16,6 +17,9 @@ function App() {
 
         {/* USER PAGES */}
         <Route path="/user" element={<ProtectedRoute allowedRoles={['user']}><UserHome /></ProtectedRoute>} />
+
+        {/* DONATIONS PAGE */}
+        <Route path="/donations" element={<DonationsPage />} />
       </Routes>
     </BrowserRouter>
   );
