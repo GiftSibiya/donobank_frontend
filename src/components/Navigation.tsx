@@ -1,6 +1,5 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Button } from './ui/button';
 
 const Navigation: React.FC = () => {
   return (
@@ -13,11 +12,7 @@ const Navigation: React.FC = () => {
             </Link>
           </div>
           <div className="flex items-center space-x-4">
-            <Link to="/donations">
-              <Button variant="outline">
-                View Donations
-              </Button>
-            </Link>
+            <Link to="/donations" />
           </div>
         </div>
       </div>

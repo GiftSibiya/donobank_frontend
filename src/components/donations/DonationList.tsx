@@ -54,7 +54,7 @@ const DonationList: React.FC<DonationListProps> = ({ donations, onStatusUpdate }
                 </TableCell>
 
                 <TableCell>
-                  ${donation.amount.toLocaleString()}
+                  R{donation.amount.toLocaleString()}
                 </TableCell>
 
                 <TableCell className="text-muted-foreground">

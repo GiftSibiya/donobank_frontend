@@ -1,15 +1,14 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 import Navigation from '../../components/Navigation';
 import { Button } from '../../components/ui/button';
-import { Heart, DollarSign, Users } from 'lucide-react';
+import { Heart, DollarSign, Users, Github, Phone } from 'lucide-react';
 
 const HomePage = () => {
   return (
-    <div className="min-h-screen ring-1 ring-red-500 w-[100vw] bg-gray-50">
+    <div className="min-h-screen ring-1 ring-red-500 w-[100vw] bg-gray-50 flex flex-col">
       <Navigation />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="text-center">
           <div className="flex justify-center mb-6">
             <div className="p-4 bg-blue-100 rounded-full">
@@ -62,6 +61,46 @@ const HomePage = () => {
           </div>
         </div>
       </div>
+
+      {/* Footer */}
+      <footer className="bg-gray-800 text-white py-8 mt-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <div className="mb-4 md:mb-0">
+              <p className="text-lg font-semibold">Gift Sibiya</p>
+              <p className="text-gray-300 text-sm">Full Stack Developer</p>
+            </div>
+
+            <div className="flex items-center space-x-6">
+              <a
+                href="https://github.com/GiftSibiya/donobank_frontend"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors"
+              >
+                <Github className="h-5 w-5" />
+                <span>GitHub</span>
+              </a>
+
+              <a
+                href="https://wa.me/27712442080"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors"
+              >
+                <Phone className="h-5 w-5" />
+                <span>WhatsApp</span>
+              </a>
+            </div>
+          </div>
+
+          <div className="mt-6 pt-6 border-t border-gray-700 text-center">
+            <p className="text-gray-400 text-sm">
+              © 2025 DonoBank. Built with React, TypeScript, and Supabase.
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };

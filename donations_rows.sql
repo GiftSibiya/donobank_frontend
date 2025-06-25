@@ -1,0 +1,1 @@
+INSERT INTO "public"."donations" ("id", "donor_name", "created_at", "status", "amount", "updated_at") VALUES ('5', 'old donation', '2025-06-25 16:33:08.769295+00', 'Pending', '125', '2025-06-25 17:04:42.677'), ('6', 'new donation', '2025-06-25 17:07:49.611002+00', 'Completed', '40', '2025-06-25 17:19:22.453');

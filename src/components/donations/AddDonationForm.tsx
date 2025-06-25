@@ -51,7 +51,7 @@ const AddDonationForm: React.FC<AddDonationFormProps> = ({ onSubmit }) => {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="amount">Amount ($)</Label>
+        <Label htmlFor="amount">Amount (R)</Label>
         <Input
           id="amount"
           type="number"
