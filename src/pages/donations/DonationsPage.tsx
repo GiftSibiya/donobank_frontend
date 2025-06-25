@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Plus, DollarSign, Users, TrendingUp } from 'lucide-react';
 import { Donation } from '../../types/donation';
 import { donationService } from '../../services/donationService';
+import { supabaseService } from '../../services/supabaseService';
 import { Button } from '../../components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../../components/ui/dialog';
 import AddDonationForm from '../../components/donations/AddDonationForm';
@@ -12,14 +13,43 @@ const DonationsPage: React.FC = () => {
   const [donations, setDonations] = useState<Donation[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState<string>('Testing connection...');
 
   const totalAmount = donations.reduce((sum, donation) => sum + donation.amount, 0);
   const completedDonations = donations.filter(d => d.status === 'Completed').length;
   const pendingDonations = donations.filter(d => d.status === 'Pending').length;
 
   useEffect(() => {
+    testSupabaseConnection();
     loadDonations();
   }, []);
+
+  const testSupabaseConnection = async () => {
+    try {
+      console.log('=== SUPABASE CONNECTION TEST START ===');
+
+      // Test basic connection
+      const connectionResult = await supabaseService.testConnection();
+      console.log('Connection test result:', connectionResult);
+
+      // Test database access
+      const dbResult = await supabaseService.testDatabaseAccess();
+      console.log('Database access test result:', dbResult);
+
+      if (connectionResult.success && dbResult.success) {
+        setConnectionStatus('✅ Supabase connected successfully');
+        console.log('✅ All Supabase tests passed!');
+      } else {
+        setConnectionStatus('❌ Supabase connection failed');
+        console.log('❌ Supabase tests failed');
+      }
+
+      console.log('=== SUPABASE CONNECTION TEST END ===');
+    } catch (error) {
+      console.error('Error testing Supabase connection:', error);
+      setConnectionStatus('❌ Supabase connection error');
+    }
+  };
 
   const loadDonations = async () => {
     try {
@@ -75,6 +105,13 @@ const DonationsPage: React.FC = () => {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Charitable Donations</h1>
           <p className="mt-2 text-gray-600">Track and manage your charitable contributions</p>
+          <div className="mt-4 p-3 bg-gray-100 rounded-lg">
+            <p className="text-sm font-medium text-gray-700">
+              Supabase Status: <span className={connectionStatus.includes('✅') ? 'text-green-600' : 'text-red-600'}>
+                {connectionStatus}
+              </span>
+            </p>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
