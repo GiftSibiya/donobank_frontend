@@ -17,10 +17,8 @@ CREATE INDEX IF NOT EXISTS idx_donations_status ON donations(status);
 -- Create an index on created_at for better sorting performance
 CREATE INDEX IF NOT EXISTS idx_donations_created_at ON donations(created_at DESC);
 
--- Enable Row Level Security (RLS)
 ALTER TABLE donations ENABLE ROW LEVEL SECURITY;
 
--- Create a policy that allows all operations for now (you can restrict this later)
 CREATE POLICY "Allow all operations on donations" ON donations
   FOR ALL USING (true);
 

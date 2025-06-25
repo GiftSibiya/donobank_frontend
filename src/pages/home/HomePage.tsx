@@ -6,7 +6,7 @@ import { Heart, DollarSign, Users } from 'lucide-react';
 
 const HomePage = () => {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen ring-1 ring-red-500 w-[100vw] bg-gray-50">
       <Navigation />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">

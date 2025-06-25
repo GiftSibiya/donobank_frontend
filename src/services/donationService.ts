@@ -72,74 +72,6 @@ export const donationService = {
     }
   },
 
-  // Delete a donation
-  async deleteDonation(id: string): Promise<void> {
-    try {
-      const { error } = await supabase
-        .from('donations')
-        .delete()
-        .eq('id', id);
-
-      if (error) {
-        console.error('Error deleting donation:', error);
-        throw new Error(error.message);
-      }
-    } catch (error) {
-      console.error('Error in deleteDonation:', error);
-      throw error;
-    }
-  },
-
-  // Get a single donation by ID
-  async getDonationById(id: string): Promise<Donation | null> {
-    try {
-      const { data, error } = await supabase
-        .from('donations')
-        .select('*')
-        .eq('id', id)
-        .single();
-
-      if (error) {
-        if (error.code === 'PGRST116') {
-          // No rows returned
-          return null;
-        }
-        console.error('Error fetching donation by ID:', error);
-        throw new Error(error.message);
-      }
-
-      return data;
-    } catch (error) {
-      console.error('Error in getDonationById:', error);
-      throw error;
-    }
-  },
-
-  // Update a donation (full update)
-  async updateDonation(id: string, updates: Partial<CreateDonationRequest>): Promise<Donation> {
-    try {
-      const { data: updatedDonation, error } = await supabase
-        .from('donations')
-        .update({
-          ...updates,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Error updating donation:', error);
-        throw new Error(error.message);
-      }
-
-      return updatedDonation;
-    } catch (error) {
-      console.error('Error in updateDonation:', error);
-      throw error;
-    }
-  },
-
   // Search donations by donor name
   async searchDonationsByDonor(donorName: string): Promise<Donation[]> {
     try {
@@ -160,25 +92,4 @@ export const donationService = {
       throw error;
     }
   },
-
-  // Get donations by status
-  async getDonationsByStatus(status: 'Pending' | 'Completed' | 'Failed'): Promise<Donation[]> {
-    try {
-      const { data, error } = await supabase
-        .from('donations')
-        .select('*')
-        .eq('status', status)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Error fetching donations by status:', error);
-        throw new Error(error.message);
-      }
-
-      return data || [];
-    } catch (error) {
-      console.error('Error in getDonationsByStatus:', error);
-      throw error;
-    }
-  }
 }; 

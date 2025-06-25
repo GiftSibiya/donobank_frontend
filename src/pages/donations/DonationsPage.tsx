@@ -1,24 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, DollarSign, Users, TrendingUp, Search, Filter } from 'lucide-react';
+import { Plus, DollarSign, Users, TrendingUp, Search } from 'lucide-react';
 import { Donation } from '../../types/donation';
 import { donationService } from '../../services/donationService';
 import { supabaseService } from '../../services/supabaseService';
 import { Button } from '../../components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../../components/ui/dialog';
 import { Input } from '../../components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
 import AddDonationForm from '../../components/donations/AddDonationForm';
 import DonationList from '../../components/donations/DonationList';
 import Navigation from '../../components/Navigation';
 
 const DonationsPage: React.FC = () => {
+  // STATES
   const [donations, setDonations] = useState<Donation[]>([]);
   const [filteredDonations, setFilteredDonations] = useState<Donation[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<string>('Testing connection...');
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
 
   const totalAmount = donations.reduce((sum, donation) => sum + donation.amount, 0);
   const completedDonations = donations.filter(d => d.status === 'Completed').length;
@@ -31,7 +30,7 @@ const DonationsPage: React.FC = () => {
 
   useEffect(() => {
     filterDonations();
-  }, [donations, searchTerm, statusFilter]);
+  }, [donations, searchTerm]);
 
   const filterDonations = () => {
     let filtered = [...donations];
@@ -41,12 +40,7 @@ const DonationsPage: React.FC = () => {
       filtered = filtered.filter(donation =>
         donation.donor_name.toLowerCase().includes(searchTerm.toLowerCase())
       );
-    }
-
-    // Apply status filter
-    if (statusFilter !== 'all') {
-      filtered = filtered.filter(donation => donation.status === statusFilter);
-    }
+    };
 
     setFilteredDonations(filtered);
   };
@@ -116,38 +110,17 @@ const DonationsPage: React.FC = () => {
     }
   };
 
-  const handleDeleteDonation = async (id: string) => {
-    try {
-      await donationService.deleteDonation(id);
-      setDonations(prev => prev.filter(donation => donation.id !== id));
-    } catch (error) {
-      console.error('Error deleting donation:', error);
-    }
-  };
-
-  const handleUpdateDonation = async (id: string, updates: { donor_name: string; amount: number }) => {
-    try {
-      const updatedDonation = await donationService.updateDonation(id, updates);
-      setDonations(prev =>
-        prev.map(donation =>
-          donation.id === id ? updatedDonation : donation
-        )
-      );
-    } catch (error) {
-      console.error('Error updating donation:', error);
-    }
-  };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-screen w-[100vw]">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 w-[100vw]">
       <Navigation />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -246,28 +219,12 @@ const DonationsPage: React.FC = () => {
                   className="pl-10"
                 />
               </div>
-              <div className="flex items-center gap-2">
-                <Filter className="h-4 w-4 text-gray-400" />
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="w-40">
-                    <SelectValue placeholder="Filter by status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Status</SelectItem>
-                    <SelectItem value="Pending">Pending</SelectItem>
-                    <SelectItem value="Completed">Completed</SelectItem>
-                    <SelectItem value="Failed">Failed</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
             </div>
           </div>
 
           <DonationList
             donations={filteredDonations}
             onStatusUpdate={handleStatusUpdate}
-            onDelete={handleDeleteDonation}
-            onUpdate={handleUpdateDonation}
           />
         </div>
       </div>

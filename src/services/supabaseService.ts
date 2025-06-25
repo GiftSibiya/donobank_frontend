@@ -11,6 +11,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export const supabaseService = {
+
   // Test the connection to Supabase
   async testConnection() {
     try {
@@ -18,12 +19,10 @@ export const supabaseService = {
       console.log('Supabase URL:', supabaseUrl);
       console.log('Supabase Anon Key exists:', !!supabaseAnonKey);
 
-      // Try to get the current user (this will test the connection)
       const { data: { user }, error } = await supabase.auth.getUser();
 
       if (error) {
         console.log('Supabase connection test - Auth error (this is normal if not logged in):', error.message);
-        // Even if auth fails, the connection might still work
         return {
           success: true,
           message: 'Supabase connection established (auth not required)',
@@ -52,7 +51,6 @@ export const supabaseService = {
     try {
       console.log('Testing Supabase database access...');
 
-      // Try a simple query (this will test if we can access the database)
       const { data, error } = await supabase
         .from('donations')
         .select('count')
