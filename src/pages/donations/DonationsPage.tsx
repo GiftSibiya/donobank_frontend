@@ -1,19 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, DollarSign, Users, TrendingUp } from 'lucide-react';
+import { Plus, DollarSign, Users, TrendingUp, Search, Filter } from 'lucide-react';
 import { Donation } from '../../types/donation';
 import { donationService } from '../../services/donationService';
 import { supabaseService } from '../../services/supabaseService';
 import { Button } from '../../components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../../components/ui/dialog';
+import { Input } from '../../components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
 import AddDonationForm from '../../components/donations/AddDonationForm';
 import DonationList from '../../components/donations/DonationList';
 import Navigation from '../../components/Navigation';
 
 const DonationsPage: React.FC = () => {
   const [donations, setDonations] = useState<Donation[]>([]);
+  const [filteredDonations, setFilteredDonations] = useState<Donation[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<string>('Testing connection...');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
 
   const totalAmount = donations.reduce((sum, donation) => sum + donation.amount, 0);
   const completedDonations = donations.filter(d => d.status === 'Completed').length;
@@ -23,6 +28,28 @@ const DonationsPage: React.FC = () => {
     testSupabaseConnection();
     loadDonations();
   }, []);
+
+  useEffect(() => {
+    filterDonations();
+  }, [donations, searchTerm, statusFilter]);
+
+  const filterDonations = () => {
+    let filtered = [...donations];
+
+    // Apply search filter
+    if (searchTerm) {
+      filtered = filtered.filter(donation =>
+        donation.donor_name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Apply status filter
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(donation => donation.status === statusFilter);
+    }
+
+    setFilteredDonations(filtered);
+  };
 
   const testSupabaseConnection = async () => {
     try {
@@ -86,6 +113,28 @@ const DonationsPage: React.FC = () => {
       );
     } catch (error) {
       console.error('Error updating donation status:', error);
+    }
+  };
+
+  const handleDeleteDonation = async (id: string) => {
+    try {
+      await donationService.deleteDonation(id);
+      setDonations(prev => prev.filter(donation => donation.id !== id));
+    } catch (error) {
+      console.error('Error deleting donation:', error);
+    }
+  };
+
+  const handleUpdateDonation = async (id: string, updates: { donor_name: string; amount: number }) => {
+    try {
+      const updatedDonation = await donationService.updateDonation(id, updates);
+      setDonations(prev =>
+        prev.map(donation =>
+          donation.id === id ? updatedDonation : donation
+        )
+      );
+    } catch (error) {
+      console.error('Error updating donation:', error);
     }
   };
 
@@ -168,7 +217,7 @@ const DonationsPage: React.FC = () => {
 
         <div className="bg-white rounded-lg shadow">
           <div className="px-6 py-4 border-b border-gray-200">
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold text-gray-900">Donation Records</h2>
               <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
                 <DialogTrigger asChild>
@@ -185,11 +234,40 @@ const DonationsPage: React.FC = () => {
                 </DialogContent>
               </Dialog>
             </div>
+
+            {/* Search and Filter Controls */}
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Input
+                  placeholder="Search by donor name..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <Filter className="h-4 w-4 text-gray-400" />
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="w-40">
+                    <SelectValue placeholder="Filter by status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Status</SelectItem>
+                    <SelectItem value="Pending">Pending</SelectItem>
+                    <SelectItem value="Completed">Completed</SelectItem>
+                    <SelectItem value="Failed">Failed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
           </div>
 
           <DonationList
-            donations={donations}
+            donations={filteredDonations}
             onStatusUpdate={handleStatusUpdate}
+            onDelete={handleDeleteDonation}
+            onUpdate={handleUpdateDonation}
           />
         </div>
       </div>

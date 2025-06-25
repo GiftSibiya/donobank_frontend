@@ -1,75 +1,184 @@
 import { Donation, CreateDonationRequest, UpdateDonationStatusRequest } from '../types/donation';
-
-// Mock data - in a real app, this would be replaced with Supabase calls
-let donations: Donation[] = [
-  {
-    id: '1',
-    donor_name: 'John Doe',
-    amount: 100,
-    status: 'Completed',
-    created_at: '2024-01-15T10:30:00Z',
-    updated_at: '2024-01-15T10:30:00Z'
-  },
-  {
-    id: '2',
-    donor_name: 'Jane Smith',
-    amount: 250,
-    status: 'Pending',
-    created_at: '2024-01-16T14:20:00Z',
-    updated_at: '2024-01-16T14:20:00Z'
-  },
-  {
-    id: '3',
-    donor_name: 'Bob Johnson',
-    amount: 75,
-    status: 'Failed',
-    created_at: '2024-01-17T09:15:00Z',
-    updated_at: '2024-01-17T09:15:00Z'
-  }
-];
+import { supabase } from './supabaseService';
 
 export const donationService = {
   // Get all donations
   async getDonations(): Promise<Donation[]> {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return [...donations];
+    try {
+      const { data, error } = await supabase
+        .from('donations')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching donations:', error);
+        throw new Error(error.message);
+      }
+
+      return data || [];
+    } catch (error) {
+      console.error('Error in getDonations:', error);
+      throw error;
+    }
   },
 
   // Create a new donation
   async createDonation(data: CreateDonationRequest): Promise<Donation> {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 800));
+    try {
+      const { data: newDonation, error } = await supabase
+        .from('donations')
+        .insert([{
+          donor_name: data.donor_name,
+          amount: data.amount,
+          status: 'Pending'
+        }])
+        .select()
+        .single();
 
-    const newDonation: Donation = {
-      id: Date.now().toString(),
-      donor_name: data.donor_name,
-      amount: data.amount,
-      status: 'Pending',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
+      if (error) {
+        console.error('Error creating donation:', error);
+        throw new Error(error.message);
+      }
 
-    donations.push(newDonation);
-    return newDonation;
+      return newDonation;
+    } catch (error) {
+      console.error('Error in createDonation:', error);
+      throw error;
+    }
   },
 
   // Update donation status
   async updateDonationStatus(data: UpdateDonationStatusRequest): Promise<Donation> {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 600));
+    try {
+      const { data: updatedDonation, error } = await supabase
+        .from('donations')
+        .update({
+          status: data.status,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', data.id)
+        .select()
+        .single();
 
-    const donationIndex = donations.findIndex(d => d.id === data.id);
-    if (donationIndex === -1) {
-      throw new Error('Donation not found');
+      if (error) {
+        console.error('Error updating donation status:', error);
+        throw new Error(error.message);
+      }
+
+      return updatedDonation;
+    } catch (error) {
+      console.error('Error in updateDonationStatus:', error);
+      throw error;
     }
+  },
 
-    donations[donationIndex] = {
-      ...donations[donationIndex],
-      status: data.status,
-      updated_at: new Date().toISOString()
-    };
+  // Delete a donation
+  async deleteDonation(id: string): Promise<void> {
+    try {
+      const { error } = await supabase
+        .from('donations')
+        .delete()
+        .eq('id', id);
 
-    return donations[donationIndex];
+      if (error) {
+        console.error('Error deleting donation:', error);
+        throw new Error(error.message);
+      }
+    } catch (error) {
+      console.error('Error in deleteDonation:', error);
+      throw error;
+    }
+  },
+
+  // Get a single donation by ID
+  async getDonationById(id: string): Promise<Donation | null> {
+    try {
+      const { data, error } = await supabase
+        .from('donations')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (error) {
+        if (error.code === 'PGRST116') {
+          // No rows returned
+          return null;
+        }
+        console.error('Error fetching donation by ID:', error);
+        throw new Error(error.message);
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Error in getDonationById:', error);
+      throw error;
+    }
+  },
+
+  // Update a donation (full update)
+  async updateDonation(id: string, updates: Partial<CreateDonationRequest>): Promise<Donation> {
+    try {
+      const { data: updatedDonation, error } = await supabase
+        .from('donations')
+        .update({
+          ...updates,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error updating donation:', error);
+        throw new Error(error.message);
+      }
+
+      return updatedDonation;
+    } catch (error) {
+      console.error('Error in updateDonation:', error);
+      throw error;
+    }
+  },
+
+  // Search donations by donor name
+  async searchDonationsByDonor(donorName: string): Promise<Donation[]> {
+    try {
+      const { data, error } = await supabase
+        .from('donations')
+        .select('*')
+        .ilike('donor_name', `%${donorName}%`)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error searching donations:', error);
+        throw new Error(error.message);
+      }
+
+      return data || [];
+    } catch (error) {
+      console.error('Error in searchDonationsByDonor:', error);
+      throw error;
+    }
+  },
+
+  // Get donations by status
+  async getDonationsByStatus(status: 'Pending' | 'Completed' | 'Failed'): Promise<Donation[]> {
+    try {
+      const { data, error } = await supabase
+        .from('donations')
+        .select('*')
+        .eq('status', status)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching donations by status:', error);
+        throw new Error(error.message);
+      }
+
+      return data || [];
+    } catch (error) {
+      console.error('Error in getDonationsByStatus:', error);
+      throw error;
+    }
   }
 }; 
